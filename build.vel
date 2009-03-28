@@ -1,0 +1,53 @@
+options(
+        default 'build'
+        version '0.1'
+        website '~/projects/zedshaw.com/src/projects/earing'
+)
+
+imports [
+    recipe(from 'software/build.vel' as 'software')
+]
+
+depends (
+    gen ['ops' 'lexer' 'parser']
+    test ['gen' 'earing']
+    full ['gen']
+    build ['earing']
+    build-OSX ['earing-OSX']
+) 
+
+targets(
+        lexer 'ragel -C -G2 src/lexer.rl'
+
+        parser cd(to 'src' do '../software/lemon -s grammar.y')
+
+        ops "python src/ops_gen.py"
+
+        earing 'make'
+        earing-OSX 'make CFLAGS="-fnested-functions -g"'
+
+        test [
+            $ valgrind build/earing samples/linux-64.asm 
+            $ valgrind build/earing samples/error.asm
+        ]
+
+        clean [
+            $ rm -f src/*.o build/earing
+        ]
+
+        software-64 [
+            cd(to 'software' do needs ['software.lemon' 'software.lightning' 'software.udis'])
+        ]
+
+        software-others [
+            cd(to 'software' do needs ['software.lemon' 'software.lightning-1.2' 'software.udis'])
+        ]
+
+        package [
+           $ bzr export earing-%(version)s
+           $ tar -cjvf build/earing-%(version)s.tar.bz2 earing-%(version)s
+           $ rm -rf earing-%(version)s
+           $ cp build/earing-%(version)s.tar.bz2 %(website)s
+        ]
+)
+

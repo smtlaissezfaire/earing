@@ -1,0 +1,41 @@
+options( 
+    default "build"
+)
+
+imports [ ]
+
+targets (
+    clean [
+        $ rm -rf lemon
+        cd(to "lightning" do 'make clean')
+    ]
+
+    lemon [
+        $ gcc -O3 -o lemon lemon.c
+    ]
+
+    lightning [
+        cd(to "lightning" do needs ['software.autoconfit'])
+    ]
+
+    lightning-1.2 [
+        $ tar -xzvf lightning-1.2.tar.gz
+        cd(to "lightning-1.2" do [
+            needs ['software.autoconfit']
+        ])
+    ]
+
+    udis [
+        $ tar -xzvf udis86-1.7.tar.gz
+        cd(to "udis86-1.7" do [
+            needs ['software.autoconfit']
+        ])
+    ]
+
+    autoconfit [
+        $ ./configure
+        $ make
+        $ sudo make install
+    ]
+)
+
